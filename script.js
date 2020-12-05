@@ -1,120 +1,53 @@
-// dependencies (DOM Elements)====================
-const timeBlocksContainer = $("#time-blocks");
+var hour9 = $("#9");
+var hour10 = $("#10");
+var hour11 = $("#11");
+var hour12 = $("#12");
+var hour1 = $("#13");
+var hour2 = $("#14");
+var hour3 = $("#15");
+var hour4 = $("#16");
+var hour5 = $("#17");
+var time = moment();
 
-// data
-let timeBlocks;
-if (localStorage.getItem("timeBlocks")) {
-  timeBlocks = JSON.parse(localStorage.getItem("timeBlocks"));
-} else {
-   timeBlocks = [
-    {
-      hour: '8',
-      description: '',
-    },
-    {
-      hour: '9',
-      description: '',
-    },
-    {
-      hour: '10',
-      description: '',
-    },
-    {
-      hour: '11',
-      description: '',
-    },
-    {
-      hour: '12',
-      description: '',
-    },
-    {
-      hour: '13',
-      description: '',
-    },
-    {
-      hour: '14',
-      description: '',
-    },
-    {
-      hour: '15',
-      description: '',
-    },
-    {
-      hour: '16',
-      description: '',
-    },
-    {
-      hour: '17',
-      description: '',
-    },
-  ];
+function setPlanner() {
+
+    $("#currentDay").text(moment().format("dddd, MMMM Do YYYY"));
+
+    $(".time-block").each(function () {
+        var id = $(this).attr("id");
+        var schedule = localStorage.getItem(id);
+
+        if (schedule !== null) {
+            $(this).children(".schedule").val(schedule);
+        }
+    });
 }
 
-console.log(timeBlocks);
+setPlanner();
+var saveBtn = $(".saveBtn");
 
+saveBtn.on("click", function () {
+    var time = $(this).parent().attr("id");
+    var schedule = $(this).siblings(".schedule").val();
 
-// helper functions ==============================
-// renderTimeBlocks
-const renderTimeBlocks = () => {
+    localStorage.setItem(time, schedule);
+});
 
-  timeBlocks.forEach(timeBlock => {
+function pastPresentFuture() {
+    hour = time.hours();
+    $(".time-block").each(function () {
+        var thisHour = parseInt($(this).attr("id"));
 
-    const timeClass = getTimeClass(timeBlock.hour);
-
-    // create a timeblock element
-    const timeBlockEl = $(`<div id="block-${timeBlock.hour}" class="time-block row">`);
-    // create an hour display element
-    const timeBlockHour = $(`<div class="hour col-1">`).text(
-      `${timeBlock.hour}`
-    );
-    // add it to the timeblock element
-    timeBlockEl.append(timeBlockHour);
-    // create a description text area
-    const timeBlockDesc = $(
-      `<textarea class="description col-10 ${timeClass}" id="text-${timeBlock.hour}" cols="30" rows="10">`
-    ).val(timeBlock.description);
-    // add it to the timeblock element
-    timeBlockEl.append(timeBlockDesc);
-    // create a save button
-    const timeBlockSave = $(`<button class="saveBtn col-1">`).text("Save");
-    // add it to the timeblock element
-    timeBlockEl.append(timeBlockSave);
-    // add the timeblock to the timeBlocksContainer
-    timeBlocksContainer.append(timeBlockEl);
-  });
-
-  
+        if (thisHour > hour) {
+            $(this).addClass("future")
+        }
+        else if (thisHour === hour) {
+            $(this).addClass("present");
+        }
+        else {
+            $(this).addClass("past");
+        }
+    })
 }
-// getTimeClass
-const getTimeClass = function(timeBlockHour) {
-  const currentHour = moment().hours();
-  if (parseInt(timeBlockHour) < currentHour) {
-    return 'past';
-  } else if (parseInt(timeBlockHour) === currentHour) {
-    return 'present';
-  } else {
-    return 'future';
-  }
-};
 
-// initializers
-renderTimeBlocks();
-
-// user interactions
-$(".saveBtn").click(function(event) {
-  event.preventDefault();
-  // get the time
-  const time = $(this).parent().find('.hour').text();
-  // get the description
-  const description = $(this).prev().val();
-  // find the correct timeblock in the array
-  timeBlocks.forEach(timeBlock => {
-    // update it's values from the text area
-    if (timeBlock.hour === time) {
-      timeBlock.description = description;
-    }
-  });
-
-  // save the updated array in local storage
-  localStorage.setItem("timeBlocks", JSON.stringify(timeBlocks));
-})
+pastPresentFuture();
